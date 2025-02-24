@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import pool from "./database";
 import tasksRouter from "./routes/tasks";
 
+// NEW: import the auth routes
+import authRoutes from "./routes/auth";
+
 dotenv.config();
 
 const app = express();
@@ -21,7 +24,10 @@ app.get("/", async (req, res) => {
   }
 });
 
-// Use tasks routes
+// NEW: Mount /auth routes
+app.use("/auth", authRoutes);
+
+// Existing /tasks routes
 app.use("/tasks", tasksRouter);
 
 export default app;
