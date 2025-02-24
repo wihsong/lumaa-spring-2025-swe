@@ -1,10 +1,10 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import pool from "../database";
 
 const router = Router();
 
 // GET /tasks
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const result = await pool.query("SELECT * FROM tasks ORDER BY id ASC");
     res.json(result.rows);
@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /tasks
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
   const { title, description } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Title is required" });
@@ -34,7 +34,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /tasks/:id
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { title, description, isComplete } = req.body;
 
@@ -59,7 +59,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE /tasks/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
