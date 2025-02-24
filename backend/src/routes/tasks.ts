@@ -1,12 +1,23 @@
 import { Router, Request, Response } from "express";
 import pool from "../database";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
 
+// Protect all task routes with authMiddleware
+router.use(authMiddleware);
+
 // GET /tasks
 router.get("/", async (req: Request, res: Response) => {
+  const userId = (req as any).userId;  // userId from token
   try {
-    const result = await pool.query("SELECT * FROM tasks ORDER BY id ASC");
+    // Only fetch tasks for this user
+    const result = await pool.query(
+      `SELECT * FROM tasks
+       WHERE "userId" = $1
+       ORDER BY id ASC`,
+      [userId]
+    );
     res.json(result.rows);
   } catch (error) {
     console.error(error);
@@ -16,15 +27,20 @@ router.get("/", async (req: Request, res: Response) => {
 
 // POST /tasks
 router.post("/", async (req: Request, res: Response) => {
+  const userId = (req as any).userId;
   const { title, description } = req.body;
+
   if (!title) {
     return res.status(400).json({ error: "Title is required" });
   }
 
   try {
+    // Insert new task for this user
     const result = await pool.query(
-      "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *",
-      [title, description]
+      `INSERT INTO tasks (title, description, "userId")
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [title, description, userId]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -35,11 +51,23 @@ router.post("/", async (req: Request, res: Response) => {
 
 // PUT /tasks/:id
 router.put("/:id", async (req: Request, res: Response) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
   const { title, description, isComplete } = req.body;
 
   try {
-    const result = await pool.query(
+    // Ensure the task belongs to the logged-in user
+    const existing = await pool.query(
+      `SELECT * FROM tasks
+       WHERE id = $1 AND "userId" = $2`,
+      [id, userId]
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: "Task not found or unauthorized" });
+    }
+
+    // Update the task
+    const updated = await pool.query(
       `UPDATE tasks
        SET title = $1, description = $2, "isComplete" = $3
        WHERE id = $4
@@ -47,11 +75,7 @@ router.put("/:id", async (req: Request, res: Response) => {
       [title, description, isComplete, id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Task not found" });
-    }
-
-    res.json(result.rows[0]);
+    res.json(updated.rows[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error updating task" });
@@ -60,13 +84,22 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 // DELETE /tasks/:id
 router.delete("/:id", async (req: Request, res: Response) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
 
   try {
-    const result = await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Task not found" });
+    // Ensure the task belongs to this user
+    const existing = await pool.query(
+      `SELECT * FROM tasks
+       WHERE id = $1 AND "userId" = $2`,
+      [id, userId]
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: "Task not found or unauthorized" });
     }
+
+    // Delete the task
+    await pool.query("DELETE FROM tasks WHERE id = $1", [id]);
     res.json({ message: "Task deleted successfully" });
   } catch (error) {
     console.error(error);

@@ -4,116 +4,97 @@
 
 ---
 
-## Overview
+# Task Manager
 
-Create a “Task Management” application with **React + TypeScript** (frontend), **Node.js** (or **Nest.js**) (backend), and **PostgreSQL** (database). The application should:
+A minimal full-stack application for managing tasks with user authentication.
 
-1. **Register** (sign up) and **Log in** (sign in) users.
-2. After logging in, allow users to:
-   - **View a list of tasks**.
-   - **Create a new task**.
-   - **Update an existing task** (e.g., mark complete, edit).
-   - **Delete a task**.
+## 1. Database Setup
 
-Focus on **correctness**, **functionality**, and **code clarity** rather than visual design.  
-This challenge is intended to be completed within ~3 hours, so keep solutions minimal yet functional.
+### Create a PostgreSQL Database
+Create a database named `taskmanager`.
 
----
+### Set Environment Variables
+Create a `.env` file in the `backend/` directory with the following content:
 
-## Requirements
+```bash
+DATABASE_URL=postgresql://USERNAME:PASSWORD@localhost:5432/taskmanager
+JWT_SECRET=supersecretkey
+PORT=4000
+```
 
-### 1. Authentication
+Replace `USERNAME`, `PASSWORD`, and other values as needed.
 
-- **User Model**:
-  - `id`: Primary key
-  - `username`: Unique string
-  - `password`: Hashed string
-- **Endpoints**:
-  - `POST /auth/register` – Create a new user
-  - `POST /auth/login` – Login user, return a token (e.g., JWT)
-- **Secure the Tasks Routes**: Only authenticated users can perform task operations.  
-  - **Password Hashing**: Use `bcrypt` or another hashing library to store passwords securely.
-  - **Token Verification**: Verify the token (JWT) on each request to protected routes.
+### Run Migrations
+In the `backend/` folder, run:
 
-### 2. Backend (Node.js or Nest.js)
+```bash
+psql -d taskmanager -f ./src/migrations/001_init.sql
+```
 
-- **Tasks CRUD**:  
-  - `GET /tasks` – Retrieve a list of tasks (optionally filtered by user).  
-  - `POST /tasks` – Create a new task.  
-  - `PUT /tasks/:id` – Update a task (e.g., mark as complete, edit text).  
-  - `DELETE /tasks/:id` – Delete a task.
-- **Task Model**:
-  - `id`: Primary key
-  - `title`: string
-  - `description`: string (optional)
-  - `isComplete`: boolean (default `false`)
-  - _(Optional)_ `userId` to link tasks to the user who created them
-- **Database**: PostgreSQL
-  - Provide instructions/migrations to set up:
-    - `users` table (with hashed passwords)
-    - `tasks` table
-- **Setup**:
-  - `npm install` to install dependencies
-  - `npm run start` (or `npm run dev`) to run the server
-  - Document any environment variables (e.g., database connection string, JWT secret)
+This script should create the necessary tables (e.g., users, tasks).
 
-### 3. Frontend (React + TypeScript)
+## 2. Running the Backend
 
-- **Login / Register**:
-  - Simple forms for **Register** and **Login**.
-  - Store JWT (e.g., in `localStorage`) upon successful login.
-  - If not authenticated, the user should not see the tasks page.
-- **Tasks Page**:
-  - Fetch tasks from `GET /tasks` (including auth token in headers).
-  - Display the list of tasks.
-  - Form to create a new task (`POST /tasks`).
-  - Buttons/fields to update a task (`PUT /tasks/:id`).
-  - Button to delete a task (`DELETE /tasks/:id`).
-- **Navigation**:
-  - Show `Login`/`Register` if not authenticated.
-  - Show `Logout` if authenticated.
-- **Setup**:
-  - `npm install` then `npm start` (or `npm run dev`) to run.
-  - Document how to point the frontend at the backend (e.g., `.env` file, base URL).
+### Install Dependencies
+Navigate to the `backend/` folder and run:
 
----
+```bash
+npm install
+```
 
-## Deliverables
+### Start the Backend Server
+For development, run:
 
-1. **Fork the Public Repository**: **Fork** this repo into your own GitHub account.
-2. **Implement Your Solution** in the forked repository. Make sure you're README file has:
-   - Steps to set up the database (migrations, environment variables).
-   - How to run the backend.
-   - How to run the frontend.
-   - Any relevant notes on testing.
-   - Salary Expectations per month (Mandatory)
-3. **Short Video Demo**: Provide a link (in a `.md` file in your forked repo) to a brief screen recording showing:
-   - Registering a user
-   - Logging in
-   - Creating, updating, and deleting tasks
-4. **Deadline**: Submissions are due **Sunday, Feb 23th 11:59 pm PST**.
+```bash
+npm run dev
+```
 
-> **Note**: Please keep your solution minimal. The entire project is intended to be completed in around 3 hours. Focus on core features (registration, login, tasks CRUD) rather than polished UI or extra features.
+Alternatively, to build and run:
 
----
+```bash
+npm run build
+npm run start
+```
 
-## Evaluation Criteria
+The server will run on [http://localhost:4000](http://localhost:4000).
 
-1. **Functionality**  
-   - Does registration and login work correctly (with password hashing)?
-   - Are tasks protected by authentication?
-   - Does the tasks CRUD flow work end-to-end?
+## 3. Running the Frontend
 
-2. **Code Quality**  
-   - Is the code structured logically and typed in TypeScript?
-   - Are variable/function names descriptive?
+### Install Dependencies
+Navigate to the `frontend/` folder and run:
 
-3. **Clarity**  
-   - Is the `README.md` (in your fork) clear and detailed about setup steps?
-   - Easy to run and test?
+```bash
+npm install
+```
 
-4. **Maintainability**  
-   - Organized logic (controllers/services, etc.)
-   - Minimal hard-coded values
+### Start the Frontend Server
+Run:
 
-Good luck, and we look forward to your submission!
+```bash
+npm start
+```
+
+The React app will run on [http://localhost:3000](http://localhost:3000).
+
+## 4. Testing Notes
+
+### API Testing
+Use **Postman** or `curl` to test endpoints such as:
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET/POST/PUT/DELETE /tasks`
+
+### UI Testing
+In the browser:
+1. Register a new user.
+2. Log in.
+3. Create, update, and delete tasks.
+4. Ensure that tasks are correctly associated with each user.
+
+## 5. Salary Expectations
+
+My expected monthly salary is **$1,600-$2,000 per month**.  
+
+## 6. Short Video Demo
+
+[Watch the Demo Video](https://drive.google.com/file/d/1TkXxpJdUtrrhDLodm2nIPKrAKO7afde-/view?usp=sharing)
